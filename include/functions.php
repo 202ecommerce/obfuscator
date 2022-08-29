@@ -16,7 +16,7 @@ function obfuscate($filename)                   // takes a file_path as input, r
     global $conf;
     global $parser,$traverser,$prettyPrinter;
     global $debug_mode;
-    
+
     $src_filename = $filename;
     $tmp_filename = $first_line = '';
     $t_source = file($filename);
@@ -25,9 +25,9 @@ function obfuscate($filename)                   // takes a file_path as input, r
         $first_line = array_shift($t_source);
         $tmp_filename = tempnam(sys_get_temp_dir(), 'po-');
         file_put_contents($tmp_filename,implode(PHP_EOL,$t_source));
-        $filename = $tmp_filename; // override 
+        $filename = $tmp_filename; // override
     }
-    
+
     try
     {
         $source = php_strip_whitespace($filename);
@@ -66,13 +66,13 @@ function obfuscate($filename)                   // takes a file_path as input, r
 
             if ($last_use_stmt_pos<0)   { $stmts_to_shuffle = $stmts;                                   $stmts = array();                                       }
             else                        { $stmts_to_shuffle = array_slice($stmts,$last_use_stmt_pos+1); $stmts = array_slice($stmts,0,$last_use_stmt_pos+1);    }
-            
+
             $stmts      = array_merge($stmts,shuffle_statements($stmts_to_shuffle));
             $stmts[]    = $last_inst;
         }
         // if ($debug_mode) var_dump($stmts);
 
-        
+
         $code   = trim($prettyPrinter->prettyPrintFile($stmts));            //  Use PHP-Parser function to output the obfuscated source, taking the modified obfuscated syntax tree as input
 
         if (isset($conf->strip_indentation) && $conf->strip_indentation)    // self-explanatory
@@ -90,16 +90,16 @@ function obfuscate($filename)                   // takes a file_path as input, r
         }
         if (isset($conf->user_comment))
         {
-            $code .= '/*'.PHP_EOL.$conf->user_comment.PHP_EOL.'*/'.PHP_EOL;
+            $code .= '/**'.PHP_EOL.$conf->user_comment.PHP_EOL.' */'.PHP_EOL.PHP_EOL;
         }
         $code .= $endcode;
-        
+
         if (($tmp_filename!='') && ($first_line!=''))
         {
             $code = $first_line.$code;
             unlink($tmp_filename);
         }
-        
+
         return trim($code);
     }
     catch (Exception $e)
@@ -337,13 +337,13 @@ function shuffle_statements($stmts)
     global $t_scrambler;
 
     if (!$conf->shuffle_stmts)          return $stmts;
-    
+
     $chunk_size = shuffle_get_chunk_size($stmts);
     if ($chunk_size<=0)                 return $stmts; // should never occur!
-    
+
     $n = count($stmts);
     if ($n<(2*$chunk_size))             return $stmts;
-    
+
     $scrambler              = $t_scrambler['label'];
     $label_name_prev        = $scrambler->scramble($scrambler->generate_label_name());
     $first_goto             = new PhpParser\Node\Stmt\Goto_($label_name_prev);
@@ -371,7 +371,7 @@ function shuffle_statements($stmts)
         $label_name_prev    = $label_name;
         $t_chunk            = array();
     }
-    
+
     $last_label             = new PhpParser\Node\Stmt\Label($label_name);
     shuffle($t);
     $stmts = array();
